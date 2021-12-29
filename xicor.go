@@ -14,11 +14,14 @@ type XiFloat64 struct {
 	Method    string
 	DataTies  bool
 
-	// variables reused for pval calculation
+	// variables reused for p-values calculation
 	n    float64
 	f    []float64
 	cval float64
 }
+
+var MethodAsymptotic = "asymptotic"
+var MethodPermutation = "permutation"
 
 func NewFloat64(x, y []float64, options ...func(*XiFloat64)) *XiFloat64 {
 	res := &XiFloat64{
@@ -27,7 +30,8 @@ func NewFloat64(x, y []float64, options ...func(*XiFloat64)) *XiFloat64 {
 		WantPvals: true,
 		Nperms:    1000,
 		Method:    "asymptotic",
-		DataTies:  true}
+		DataTies:  true,
+	}
 
 	for _, o := range options {
 		o(res)
@@ -39,14 +43,14 @@ func NewFloat64(x, y []float64, options ...func(*XiFloat64)) *XiFloat64 {
 func WithAsymptoticPvals() func(*XiFloat64) {
 	return func(d *XiFloat64) {
 		d.WantPvals = true
-		d.Method = "asymptotic"
+		d.Method = MethodAsymptotic
 	}
 }
 
 func WithPermutationPvals(nperms int) func(*XiFloat64) {
 	return func(d *XiFloat64) {
 		d.WantPvals = true
-		d.Method = "permutation"
+		d.Method = MethodPermutation
 		d.Nperms = nperms
 	}
 }
@@ -57,7 +61,7 @@ func WithoutTies() func(*XiFloat64) {
 	}
 }
 
-func (d *XiFloat64) xi() (float64, error) {
+func (d *XiFloat64) Correlation() (float64, error) {
 	// x, y are the data vectors
 	// Find and Remove N/A values
 	removeNaNs(d.X, d.Y)
@@ -120,8 +124,8 @@ func (d *XiFloat64) xi() (float64, error) {
 	return xi, nil
 }
 
-func (d *XiFloat64) pval() (float64, float64, error) {
-	xi, err := d.xi()
+func (d *XiFloat64) Pvalues() (float64, float64, error) {
+	xi, err := d.Correlation()
 	if err != nil {
 		return 0, 0, err
 	}
@@ -131,13 +135,14 @@ func (d *XiFloat64) pval() (float64, float64, error) {
 		return 0, 0, errors.New("Invalid method. Use either asymptotic or permutation")
 	}
 
-	//  If there are no ties, return xi and theoretical P-value:
+	// If there are no data ties, we can use some simpler theory to calculate the theoretical P-value
 	if d.DataTies == false {
 		pval = 1 - pnorm(math.Sqrt(d.n)*xi/math.Sqrt(2./5.))
 		return xi, pval, nil
 	}
 
-	// If there are ties, and the theoretical method is to be used for calculation P-values:
+	// If there are ties in the input data, the algorithm employs the more elaborated theory for calculating the P-value
+	// There is no harm in setting DataTies to true and using the fancy P-value calculation even if there are no ties
 	if d.Method == "asymptotic" {
 		q := make([]float64, len(d.f))
 		copy(q, d.f)
@@ -186,7 +191,7 @@ func (d *XiFloat64) pval() (float64, float64, error) {
 			for i := 0; i < int(d.n); i++ {
 				x1[i] = rand.Float64()
 			}
-			xinew, _, _ := NewFloat64(x1, d.Y, WithAsymptoticPvals()).pval()
+			xinew, _, _ := NewFloat64(x1, d.Y, WithAsymptoticPvals()).Pvalues()
 			r[i] = xinew
 		}
 		ps := make([]float64, d.Nperms)
