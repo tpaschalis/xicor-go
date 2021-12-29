@@ -7,7 +7,9 @@
 
 The current implementation is based off the [R code](https://statweb.stanford.edu/~souravc/xi.R) mentioned in the paper, and influenced by a [Python port](https://github.com/czbiohub/xicor) by user [czbiohub](https://github.com/czbiohub/xicor). There is also a [mirror](https://github.com/cran/XICOR) of the CRAN R package hosted on GitHub.
 
-The current package contains an implementation which uses the `Xi` struct and utilizes the [Go generics](https://go.dev/doc/tutorial/generics) introduced in Go 1.18, and a `XiFloat64` struct which works only for 64-bit slices. This distinction was made to gauge the performance difference between the two, as well as introduce float-specific performance improvements in the future!
+The current package contains an implementation which uses the `Xi` struct and utilizes the [Go generics](https://go.dev/doc/tutorial/generics) introduced in Go 1.18, and a `XiFloat64` struct which works only for 64-bit slices.
+
+This distinction was made to gauge the performance difference between the two, as well as introduce float-specific performance improvements in the future.
 
 ## Installation
 For a project utilizing Go modules, all you need to do is
@@ -20,29 +22,34 @@ go get github.com/tpaschalis/xicor-go
 ```go
 import "github.com/tpaschalis/xicor-go"
 
-// Create a new Xi object and get the correlation
-xi, err := xicor.NewFloat64(X, Y).Correlation()
+func main() {
+	x := []float64{0, 1, 2, 3, 4}
+	y := []float64{5, 6, 7, 8, 9}
 
-// Create a new Xi object and obtain the correlation along with its p-value
-// Use functional options to define
-xi, pvalue, err := xicor.NewFloat64(
-	X,
-	Y,
-	WithPermutationPvals(1000),
-	WithoutTies(),
-).Pvalues()
+	// Create a new Xi object and get the correlation
+	xi, err := xicor.NewFloat64(x, y).Correlation()
 
-// You can also use the Xi object directly
-data := &XiFloat64{
-	X:         x,
-	Y:         y,
-	WantPvals: true,
-	Nperms:    1000,
-	Method:    "asymptotic",
-	DataTies:  true,
+	// Create a new Xi object and obtain the correlation along with its p-value
+	// Use functional options to define how to perform the calculation
+	xi, pvalue, err := xicor.NewFloat64(
+		x,
+		y,
+		xicor.WithPermutationPvals(1000),
+		xicor.WithoutTies(),
+	).Pvalues()
+
+	// You can also use the Xi object directly
+	data := &xicor.XiFloat64{
+		X:         x,
+		Y:         y,
+		WantPvals: true,
+		Method:    "asymptotic",
+		DataTies:  true,
+	}
+
+	xi, pvalue, err = data.Pvalues()
+	fmt.Println(xi, pvalue, err)
 }
-
-xi, pvalue, err = data.Pvalues()
 ```
 
 ## Benchmarks
@@ -52,4 +59,4 @@ Coming soon!
 If you have an idea, or would like to discuss and contribute an improvement, you can reach out in the repo [Issues](https://github.com/tpaschalis/xicor-go/issues) and open a [Pull Request](https://github.com/tpaschalis/xicor-go/pulls)
 
 ## License
-This code present in this repo is licensed under the [MIT license](LICENSE).
+This code in this repo is licensed under the [MIT license](LICENSE).
