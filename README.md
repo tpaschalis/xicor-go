@@ -39,11 +39,11 @@ func main() {
 
 	// You can also use the Xi object directly
 	data := &xicor.Xi{
-		X:         x,
-		Y:         y,
-		WantPvals: true,
-		Method:    "asymptotic",
-		DataTies:  true,
+		X:          x,
+		Y:          y,
+		WantPvalue: true,
+		Method:     "asymptotic",
+		DataTies:   true,
 	}
 
 	xi, pvalue, err = data.Pvalue()
