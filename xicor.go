@@ -8,11 +8,11 @@ import (
 )
 
 type Xi struct {
-	X, Y      []float64
-	WantPvals bool
-	Nperms    int
-	Method    string
-	DataTies  bool
+	X, Y       []float64
+	WantPvalue bool
+	Nperms     int
+	Method     string
+	DataTies   bool
 
 	// variables reused for p-values calculation
 	n    float64
@@ -25,12 +25,12 @@ var MethodPermutation = "permutation"
 
 func New(x, y []float64, options ...func(*Xi)) *Xi {
 	res := &Xi{
-		X:         x,
-		Y:         y,
-		WantPvals: true,
-		Nperms:    1000,
-		Method:    "asymptotic",
-		DataTies:  true,
+		X:          x,
+		Y:          y,
+		WantPvalue: true,
+		Nperms:     1000,
+		Method:     "asymptotic",
+		DataTies:   true,
 	}
 
 	for _, o := range options {
@@ -40,16 +40,16 @@ func New(x, y []float64, options ...func(*Xi)) *Xi {
 	return res
 }
 
-func WithAsymptoticPvals() func(*Xi) {
+func WithAsymptoticPvalue() func(*Xi) {
 	return func(d *Xi) {
-		d.WantPvals = true
+		d.WantPvalue = true
 		d.Method = MethodAsymptotic
 	}
 }
 
-func WithPermutationPvals(nperms int) func(*Xi) {
+func WithPermutationPvalue(nperms int) func(*Xi) {
 	return func(d *Xi) {
-		d.WantPvals = true
+		d.WantPvalue = true
 		d.Method = MethodPermutation
 		d.Nperms = nperms
 	}
@@ -124,7 +124,7 @@ func (d *Xi) Correlation() (float64, error) {
 	return xi, nil
 }
 
-func (d *Xi) Pvalues() (float64, float64, error) {
+func (d *Xi) Pvalue() (float64, float64, error) {
 	xi, err := d.Correlation()
 	if err != nil {
 		return 0, 0, err
@@ -191,7 +191,7 @@ func (d *Xi) Pvalues() (float64, float64, error) {
 			for i := 0; i < int(d.n); i++ {
 				x1[i] = rand.Float64()
 			}
-			xinew, _, _ := New(x1, d.Y, WithAsymptoticPvals()).Pvalues()
+			xinew, _, _ := New(x1, d.Y, WithAsymptoticPvalue()).Pvalue()
 			r[i] = xinew
 		}
 		ps := make([]float64, d.Nperms)

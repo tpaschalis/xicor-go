@@ -67,34 +67,32 @@ func TestXi(t *testing.T) {
 	xi_1, pval_1, _ := New(
 		anscombes_quartet["x_1"],
 		anscombes_quartet["y_1"],
-		WithAsymptoticPvals(),
-	).Pvalues()
+		WithAsymptoticPvalue(),
+	).Pvalue()
 	assertEpsilon(t, xi_1, 0.275)
 	assertEpsilon(t, pval_1, 0.07841556)
-	// TODO this value isn't correct
-	//assertEpsilon(t, pval_1, 0.059)
 
 	xi_2, pval_2, _ := New(
 		anscombes_quartet["x_2"],
 		anscombes_quartet["y_2"],
-		WithAsymptoticPvals(),
-	).Pvalues()
+		WithAsymptoticPvalue(),
+	).Pvalue()
 	assertEpsilon(t, xi_2, 0.6)
 	assertEpsilon(t, pval_2, 0.0010040217037570187)
 
 	xi_3, pval_3, _ := New(
 		anscombes_quartet["x_3"],
 		anscombes_quartet["y_3"],
-		WithAsymptoticPvals(),
-	).Pvalues()
+		WithAsymptoticPvalue(),
+	).Pvalue()
 	assertEpsilon(t, xi_3, 0.38095238095238093)
 	assertEpsilon(t, pval_3, 0.04989192742513937)
 
 	xi_4, pval_4, _ := New(
 		anscombes_quartet["x_4"],
 		anscombes_quartet["y_4"],
-		WithAsymptoticPvals(),
-	).Pvalues()
+		WithAsymptoticPvalue(),
+	).Pvalue()
 	assertEpsilon(t, xi_4, 0.19999999999999996)
 	assertEpsilon(t, pval_4, 0.1515801165640982)
 
@@ -102,8 +100,8 @@ func TestXi(t *testing.T) {
 	xi_1, pval_1, _ = New(
 		anscombes_quartet["x_1"],
 		anscombes_quartet["y_1"],
-		WithPermutationPvals(1000),
-	).Pvalues()
+		WithPermutationPvalue(1000),
+	).Pvalue()
 	assertEpsilon(t, xi_1, 0.2749999999999999)
 
 	wantPval := 0.059
@@ -113,13 +111,12 @@ func TestXi(t *testing.T) {
 }
 
 func TestCompareWithR(t *testing.T) {
-
 	// Without ties
 	xi_1, pval_1, _ := New(
 		[]float64{1., 2., 3., 4., 5., 6., 7., 8., 9., 10.},
 		[]float64{5., 6., 7., 8., 9., 10., 11., 12., 13., 14.},
 		WithoutTies(),
-	).Pvalues()
+	).Pvalue()
 	assertEpsilon(t, xi_1, 0.7272727)
 	assertEpsilon(t, pval_1, 0.000138257)
 
@@ -127,8 +124,8 @@ func TestCompareWithR(t *testing.T) {
 	xi_1, pval_1, _ = New(
 		[]float64{1., 2., 3., 4., 5., 6., 7., 8., 9., 10.},
 		[]float64{5., 6., 7., 8., 9., 10., 11., 12., 13., 14.},
-		WithAsymptoticPvals(),
-	).Pvalues()
+		WithAsymptoticPvalue(),
+	).Pvalue()
 	assertEpsilon(t, xi_1, 0.7272727)
 	assertEpsilon(t, pval_1, 0.0001879616)
 
@@ -136,8 +133,8 @@ func TestCompareWithR(t *testing.T) {
 	xi_1, pval_1, _ = New(
 		[]float64{1., 2., 3., 4., 5., 6., 7., 8., 9., 10.},
 		[]float64{5., 6., 7., 8., 9., 10., 11., 12., 13., 14.},
-		WithPermutationPvals(1000),
-	).Pvalues()
+		WithPermutationPvalue(1000),
+	).Pvalue()
 	assertEpsilon(t, xi_1, 0.7272727)
 	assertEpsilon(t, pval_1, 0)
 
@@ -145,8 +142,8 @@ func TestCompareWithR(t *testing.T) {
 	xi_1, pval_1, _ = New(
 		anscombes_quartet["x_1"],
 		anscombes_quartet["y_1"],
-		WithPermutationPvals(200_000),
-	).Pvalues()
+		WithPermutationPvalue(200_000),
+	).Pvalue()
 	assertEpsilon(t, xi_1, 0.275)
 	if abs(pval_1-wantPval) > 0.01 {
 		t.Errorf("failed float assertion: got:%v, want:%v", pval_1, wantPval)

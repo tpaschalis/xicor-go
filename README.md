@@ -33,9 +33,9 @@ func main() {
 	xi, pvalue, err := xicor.New(
 		x,
 		y,
-		xicor.WithPermutationPvals(1000),
+		xicor.WithPermutationPvalue(1000),
 		xicor.WithoutTies(),
-	).Pvalues()
+	).Pvalue()
 
 	// You can also use the Xi object directly
 	data := &xicor.Xi{
@@ -46,7 +46,7 @@ func main() {
 		DataTies:  true,
 	}
 
-	xi, pvalue, err = data.Pvalues()
+	xi, pvalue, err = data.Pvalue()
 	fmt.Println(xi, pvalue, err)
 }
 ```
