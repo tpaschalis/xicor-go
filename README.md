@@ -7,9 +7,8 @@
 
 The current implementation is based off the [R code](https://statweb.stanford.edu/~souravc/xi.R) mentioned in the paper, and influenced by a [Python port](https://github.com/czbiohub/xicor) by user [czbiohub](https://github.com/czbiohub/xicor). There is also a [mirror](https://github.com/cran/XICOR) of the CRAN R package hosted on GitHub.
 
-The current package contains an implementation which uses the `Xi` struct and utilizes the [Go generics](https://go.dev/doc/tutorial/generics) introduced in Go 1.18, and a `XiFloat64` struct which works only for 64-bit slices.
+The package provides the `Xi` struct and utilizes [Go generics](https://go.dev/doc/tutorial/generics) introduced in Go 1.18.
 
-This distinction was made to gauge the performance difference between the two, as well as introduce float-specific performance improvements in the future.
 
 ## Installation
 For a project utilizing Go modules, all you need to do is
@@ -27,11 +26,11 @@ func main() {
 	y := []float64{5, 6, 7, 8, 9}
 
 	// Create a new Xi object and get the correlation
-	xi, err := xicor.NewFloat64(x, y).Correlation()
+	xi, err := xicor.New(x, y).Correlation()
 
 	// Create a new Xi object and obtain the correlation along with its p-value
 	// Use functional options to define how to perform the calculation
-	xi, pvalue, err := xicor.NewFloat64(
+	xi, pvalue, err := xicor.New(
 		x,
 		y,
 		xicor.WithPermutationPvals(1000),
@@ -39,7 +38,7 @@ func main() {
 	).Pvalues()
 
 	// You can also use the Xi object directly
-	data := &xicor.XiFloat64{
+	data := &xicor.Xi{
 		X:         x,
 		Y:         y,
 		WantPvals: true,
