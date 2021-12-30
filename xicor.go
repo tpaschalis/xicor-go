@@ -7,7 +7,7 @@ import (
 	"sort"
 )
 
-type XiFloat64 struct {
+type Xi struct {
 	X, Y      []float64
 	WantPvals bool
 	Nperms    int
@@ -23,8 +23,8 @@ type XiFloat64 struct {
 var MethodAsymptotic = "asymptotic"
 var MethodPermutation = "permutation"
 
-func NewFloat64(x, y []float64, options ...func(*XiFloat64)) *XiFloat64 {
-	res := &XiFloat64{
+func New(x, y []float64, options ...func(*Xi)) *Xi {
+	res := &Xi{
 		X:         x,
 		Y:         y,
 		WantPvals: true,
@@ -40,28 +40,28 @@ func NewFloat64(x, y []float64, options ...func(*XiFloat64)) *XiFloat64 {
 	return res
 }
 
-func WithAsymptoticPvals() func(*XiFloat64) {
-	return func(d *XiFloat64) {
+func WithAsymptoticPvals() func(*Xi) {
+	return func(d *Xi) {
 		d.WantPvals = true
 		d.Method = MethodAsymptotic
 	}
 }
 
-func WithPermutationPvals(nperms int) func(*XiFloat64) {
-	return func(d *XiFloat64) {
+func WithPermutationPvals(nperms int) func(*Xi) {
+	return func(d *Xi) {
 		d.WantPvals = true
 		d.Method = MethodPermutation
 		d.Nperms = nperms
 	}
 }
 
-func WithoutTies() func(*XiFloat64) {
-	return func(d *XiFloat64) {
+func WithoutTies() func(*Xi) {
+	return func(d *Xi) {
 		d.DataTies = false
 	}
 }
 
-func (d *XiFloat64) Correlation() (float64, error) {
+func (d *Xi) Correlation() (float64, error) {
 	// x, y are the data vectors
 	// Find and Remove N/A values
 	removeNaNs(d.X, d.Y)
@@ -124,7 +124,7 @@ func (d *XiFloat64) Correlation() (float64, error) {
 	return xi, nil
 }
 
-func (d *XiFloat64) Pvalues() (float64, float64, error) {
+func (d *Xi) Pvalues() (float64, float64, error) {
 	xi, err := d.Correlation()
 	if err != nil {
 		return 0, 0, err
@@ -191,7 +191,7 @@ func (d *XiFloat64) Pvalues() (float64, float64, error) {
 			for i := 0; i < int(d.n); i++ {
 				x1[i] = rand.Float64()
 			}
-			xinew, _, _ := NewFloat64(x1, d.Y, WithAsymptoticPvals()).Pvalues()
+			xinew, _, _ := New(x1, d.Y, WithAsymptoticPvals()).Pvalues()
 			r[i] = xinew
 		}
 		ps := make([]float64, d.Nperms)

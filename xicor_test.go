@@ -64,7 +64,7 @@ func TestXi(t *testing.T) {
 	//rand.Seed(time.Now().Unix())
 
 	// Asymptotic p-value calculation
-	xi_1, pval_1, _ := NewFloat64(
+	xi_1, pval_1, _ := New(
 		anscombes_quartet["x_1"],
 		anscombes_quartet["y_1"],
 		WithAsymptoticPvals(),
@@ -74,7 +74,7 @@ func TestXi(t *testing.T) {
 	// TODO this value isn't correct
 	//assertEpsilon(t, pval_1, 0.059)
 
-	xi_2, pval_2, _ := NewFloat64(
+	xi_2, pval_2, _ := New(
 		anscombes_quartet["x_2"],
 		anscombes_quartet["y_2"],
 		WithAsymptoticPvals(),
@@ -82,7 +82,7 @@ func TestXi(t *testing.T) {
 	assertEpsilon(t, xi_2, 0.6)
 	assertEpsilon(t, pval_2, 0.0010040217037570187)
 
-	xi_3, pval_3, _ := NewFloat64(
+	xi_3, pval_3, _ := New(
 		anscombes_quartet["x_3"],
 		anscombes_quartet["y_3"],
 		WithAsymptoticPvals(),
@@ -90,7 +90,7 @@ func TestXi(t *testing.T) {
 	assertEpsilon(t, xi_3, 0.38095238095238093)
 	assertEpsilon(t, pval_3, 0.04989192742513937)
 
-	xi_4, pval_4, _ := NewFloat64(
+	xi_4, pval_4, _ := New(
 		anscombes_quartet["x_4"],
 		anscombes_quartet["y_4"],
 		WithAsymptoticPvals(),
@@ -99,7 +99,7 @@ func TestXi(t *testing.T) {
 	assertEpsilon(t, pval_4, 0.1515801165640982)
 
 	// Permutation p-value calculation
-	xi_1, pval_1, _ = NewFloat64(
+	xi_1, pval_1, _ = New(
 		anscombes_quartet["x_1"],
 		anscombes_quartet["y_1"],
 		WithPermutationPvals(1000),
@@ -115,7 +115,7 @@ func TestXi(t *testing.T) {
 func TestCompareWithR(t *testing.T) {
 
 	// Without ties
-	xi_1, pval_1, _ := NewFloat64(
+	xi_1, pval_1, _ := New(
 		[]float64{1., 2., 3., 4., 5., 6., 7., 8., 9., 10.},
 		[]float64{5., 6., 7., 8., 9., 10., 11., 12., 13., 14.},
 		WithoutTies(),
@@ -124,7 +124,7 @@ func TestCompareWithR(t *testing.T) {
 	assertEpsilon(t, pval_1, 0.000138257)
 
 	// With asymptotic pvals
-	xi_1, pval_1, _ = NewFloat64(
+	xi_1, pval_1, _ = New(
 		[]float64{1., 2., 3., 4., 5., 6., 7., 8., 9., 10.},
 		[]float64{5., 6., 7., 8., 9., 10., 11., 12., 13., 14.},
 		WithAsymptoticPvals(),
@@ -133,7 +133,7 @@ func TestCompareWithR(t *testing.T) {
 	assertEpsilon(t, pval_1, 0.0001879616)
 
 	// With permutations
-	xi_1, pval_1, _ = NewFloat64(
+	xi_1, pval_1, _ = New(
 		[]float64{1., 2., 3., 4., 5., 6., 7., 8., 9., 10.},
 		[]float64{5., 6., 7., 8., 9., 10., 11., 12., 13., 14.},
 		WithPermutationPvals(1000),
@@ -142,7 +142,7 @@ func TestCompareWithR(t *testing.T) {
 	assertEpsilon(t, pval_1, 0)
 
 	wantPval := 0.051425
-	xi_1, pval_1, _ = NewFloat64(
+	xi_1, pval_1, _ = New(
 		anscombes_quartet["x_1"],
 		anscombes_quartet["y_1"],
 		WithPermutationPvals(200_000),
