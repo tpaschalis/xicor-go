@@ -5,9 +5,11 @@
 ## What is xicor?
 `xicor-go` is a Go implementation of the "xi" correlation metric described in the paper [_"A new coefficient of correlation"_](https://arxiv.org/pdf/1909.10140.pdf) by Sourav Chatterjee (arxiv.org/abs/1909.10140).
 
-The current implementation is based off the [R code](https://statweb.stanford.edu/~souravc/xi.R) mentioned in the paper, and influenced by a [Python port](https://github.com/czbiohub/xicor) by user [czbiohub](https://github.com/czbiohub/xicor). There is also a [mirror](https://github.com/cran/XICOR) of the CRAN R package hosted on GitHub.
+The current implementation is based off the [R code](https://statweb.stanford.edu/~souravc/xi.R) mentioned in the paper, and influenced by a [Python port](https://github.com/czbiohub/xicor) by [czbiohub](https://github.com/czbiohub/xicor). There is also a [mirror](https://github.com/cran/XICOR) of the CRAN R package hosted on GitHub.
 
 The package provides the `Xi` struct which receives the input data along with a number of functional options and is used to calculate the correlation coefficient and p-value.
+
+For a graphical comparison between the standard linear correlation coefficient and the Xi "rank correlation", you can refer to [this](https://twitter.com/adad8m/status/1474754752193830912) excellent tweet by [adad8m](https://twitter.com/adad8m)
 
 <!--
 There is also a dev branch which utilizes [Go generics](https://go.dev/doc/tutorial/generics) introduced in Go 1.18, which will be merged into the canonical release once Go 1.18 is released in February.
