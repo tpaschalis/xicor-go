@@ -7,8 +7,11 @@
 
 The current implementation is based off the [R code](https://statweb.stanford.edu/~souravc/xi.R) mentioned in the paper, and influenced by a [Python port](https://github.com/czbiohub/xicor) by user [czbiohub](https://github.com/czbiohub/xicor). There is also a [mirror](https://github.com/cran/XICOR) of the CRAN R package hosted on GitHub.
 
-The package provides the `Xi` struct and utilizes [Go generics](https://go.dev/doc/tutorial/generics) introduced in Go 1.18.
+The package provides the `Xi` struct which receives the input data along with a number of functional options and is used to calculate the correlation coefficient and p-value.
 
+<!--
+There is also a dev branch which utilizes [Go generics](https://go.dev/doc/tutorial/generics) introduced in Go 1.18, which will be merged into the canonical release once Go 1.18 is released in February.
+-->
 
 ## Installation
 For a project utilizing Go modules, all you need to do is
@@ -51,8 +54,17 @@ func main() {
 }
 ```
 
+## Current status
+I'm working towards a more stable and performant v0.0.1 release; the focus is on:
+- Validating correctness of results by comparing against original R code (current tests haven't produced any inconsistency yet)
+- Add support for categorical variables (a la the `factor` function used in R)
+- Use dev branch to rewrite some of the code using Go 1.18 generics
+- Run through a profiler to find and eliminate bottlenecks
+
 ## Benchmarks
-Coming soon!
+The current pre-v0.0.1 version of the code runs through 100k randomized samples in about 0.12 seconds.
+
+While there's a lot of low-hanging fruit to improve performance, I'll get to it once v0.0.1 is near.
 
 ## Contributing
 If you have an idea, or would like to discuss and contribute an improvement, you can reach out in the repo [Issues](https://github.com/tpaschalis/xicor-go/issues) and open a [Pull Request](https://github.com/tpaschalis/xicor-go/pulls)

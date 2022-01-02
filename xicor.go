@@ -7,6 +7,9 @@ import (
 	"sort"
 )
 
+// Xi is the main struct exposed by the `xicor` package.
+// It is used to receive the input data as well as configure some options on how to calculate the correlation coefficient and p-values.
+// In general, it is safe to just supply x and y, and leave other parameters to their default values.
 type Xi struct {
 	X, Y       []float64
 	WantPvalue bool
@@ -20,9 +23,13 @@ type Xi struct {
 	cval float64
 }
 
+// MethodAsymptotic employs the 'asympotic theory' to calculate the p-value.
 var MethodAsymptotic = "asymptotic"
+
+// MethodPermutation employes `NPerms` permutations to estimate the p-value. As per Dr. Sourav, "usually there is no need for the permutation test, the asymptotic theory is good enough".
 var MethodPermutation = "permutation"
 
+// New creates a `Xi` object which can be used to calculate the correlation coefficient along with the p-value. It receives the input datasets, as well as a number of functional options to configure the runtime behavior.
 func New(x, y []float64, options ...func(*Xi)) *Xi {
 	res := &Xi{
 		X:          x,
@@ -40,6 +47,7 @@ func New(x, y []float64, options ...func(*Xi)) *Xi {
 	return res
 }
 
+// WithAsymptoticPvalue makes sure that the asymptotic theory will be used to calculate the p-value.
 func WithAsymptoticPvalue() func(*Xi) {
 	return func(d *Xi) {
 		d.WantPvalue = true
@@ -47,6 +55,7 @@ func WithAsymptoticPvalue() func(*Xi) {
 	}
 }
 
+// WithPermutationPvalue makes sure that the p-value will be estimated using `Nperms` permutations.
 func WithPermutationPvalue(nperms int) func(*Xi) {
 	return func(d *Xi) {
 		d.WantPvalue = true
@@ -55,15 +64,22 @@ func WithPermutationPvalue(nperms int) func(*Xi) {
 	}
 }
 
+// WithoutTies informs the algorithm that there are no ties in the data, and uses some simpler theory to calculate the p-value. There is no harm in leaving DataTies to `true` even if there are no ties.
 func WithoutTies() func(*Xi) {
 	return func(d *Xi) {
+		d.WantPvalue = true
 		d.DataTies = false
 	}
 }
 
+// Correlation calculates and returns the correlation coefficient for the input data vectors `X` and `Y` along with an error.
 func (d *Xi) Correlation() (float64, error) {
+	if len(d.X) != len(d.Y) {
+		return 0, errors.New("xicor: mismatched size of input vectors")
+	}
+
 	// x, y are the data vectors
-	// Find and Remove N/A values
+	// Find and Remove N/A pair values
 	removeNaNs(d.X, d.Y)
 
 	// Factor variables should be converted to integers here
@@ -96,7 +112,6 @@ func (d *Xi) Correlation() (float64, error) {
 	}
 
 	// order of the x's, ties broken at random.
-	// TODO: we currently don't break ties at random; do so please
 	ord := argsort(pi)
 
 	// Rearrange f according to ord.
@@ -106,7 +121,7 @@ func (d *Xi) Correlation() (float64, error) {
 		ford[i] = d.f[ord[i]]
 	}
 
-	// xi is calculated in the next three lines
+	// xi is calculated in the next lines
 	diffs := make([]float64, 0)
 	for i := 0; i < int(d.n)-1; i++ {
 		diffs = append(diffs, abs(ford[i]-ford[i+1]))
@@ -124,6 +139,7 @@ func (d *Xi) Correlation() (float64, error) {
 	return xi, nil
 }
 
+// Pvalue calculates and returns the correlation coefficient and p-value for the input data vectors `X` and `Y` along with an error.
 func (d *Xi) Pvalue() (float64, float64, error) {
 	xi, err := d.Correlation()
 	if err != nil {
@@ -132,7 +148,10 @@ func (d *Xi) Pvalue() (float64, float64, error) {
 	var pval float64
 
 	if d.Method != "asymptotic" && d.Method != "permutation" {
-		return 0, 0, errors.New("Invalid method. Use either asymptotic or permutation")
+		return 0, 0, errors.New("xicor: invalid p-value calculation method; use either 'asymptotic' or 'permutation'")
+	}
+	if !d.WantPvalue {
+		return 0, 0, errors.New("xicor: trying to calculate the p-value on an object where `Xi.WantPvalues=false`")
 	}
 
 	// If there are no data ties, we can use some simpler theory to calculate the theoretical P-value
@@ -185,8 +204,6 @@ func (d *Xi) Pvalue() (float64, float64, error) {
 	if d.Method == "permutation" {
 		r := make([]float64, d.Nperms)
 		for i := 0; i < d.Nperms; i++ {
-			// x1 = runif(n, 0, 1)   (value from a uniform distribution between 0 and 1)
-			// TODO Validate correctness
 			x1 := make([]float64, int(d.n))
 			for i := 0; i < int(d.n); i++ {
 				x1[i] = rand.Float64()
@@ -208,10 +225,7 @@ func (d *Xi) Pvalue() (float64, float64, error) {
 	return xi, pval, nil
 }
 
-func removeIdx(a []float64, i int) []float64 {
-	return append(a[:i], a[i+1:]...)
-}
-func removeIdx2(a []int, i int) []int {
+func removeIdx(a []int, i int) []int {
 	return append(a[:i], a[i+1:]...)
 }
 
@@ -227,12 +241,17 @@ func removeNaNs(x, y []float64) ([]float64, []float64) {
 			nans[j] = struct{}{}
 		}
 	}
-	for nanpos := range nans {
-		x = removeIdx(x, nanpos)
-		y = removeIdx(y, nanpos)
+
+	var newX, newY []float64
+	for i := 0; i < len(x); i++ {
+		if _, ok := nans[i]; ok {
+			continue
+		}
+		newX = append(newX, x[i])
+		newY = append(newY, y[i])
 	}
 
-	return x, y
+	return newX, newY
 }
 
 func rankRND(a []float64) []float64 {
@@ -251,7 +270,7 @@ func rankRND(a []float64) []float64 {
 		pool := idx[a[i]]
 		selectedIdx := rand.Intn(len(pool))
 		res[i] = float64(pool[selectedIdx])
-		idx[a[i]] = removeIdx2(idx[a[i]], selectedIdx)
+		idx[a[i]] = removeIdx(idx[a[i]], selectedIdx)
 	}
 
 	return res
@@ -297,7 +316,32 @@ func argsort(a []float64) []int {
 	s := &fsl{Float64Slice: a, idx: indexes}
 	sort.Sort(s)
 
+	// Lets identify ties, which we should randomize
+	var currentStreak []int
+	for i := 0; i < len(a)-1; i++ {
+		currentStreak = append(currentStreak, i)
+		if a[i] == a[i+1] {
+			// we're on a streak
+			continue
+		} else {
+			// a streak was broken
+			if len(currentStreak) > 1 {
+				// we need to randomize the indices
+				first := currentStreak[0]
+				last := currentStreak[len(currentStreak)-1]
+				shuffle(indexes[first : last+1])
+			}
+			// reset the streak
+			currentStreak = []int{}
+		}
+	}
+
 	return indexes
+}
+
+func shuffle(a []int) {
+	rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
+	return
 }
 
 func abs(a float64) float64 {
@@ -305,6 +349,26 @@ func abs(a float64) float64 {
 		return a
 	}
 	return -a
+}
+
+func min(a []int) int {
+	res := a[0]
+	for _, val := range a {
+		if val < res {
+			res = val
+		}
+	}
+	return res
+}
+
+func max(a []int) int {
+	res := a[0]
+	for _, val := range a {
+		if val > res {
+			res = val
+		}
+	}
+	return res
 }
 
 func mean(a []float64) float64 {
@@ -335,14 +399,14 @@ func sum(a []float64) float64 {
 }
 
 // From https://en.wikipedia.org/wiki/Normal_distribution
-func pnorm(x float64) float64 {
-	var value, sum, result float64
-	sum = x
-	value = x
+func pnorm(a float64) float64 {
+	var val, sum, res float64
+	sum = a
+	val = a
 	for i := 1; i <= 100; i++ {
-		value = (value * x * x / (2*float64(i) + 1))
-		sum = sum + value
+		val = (val * a * a / (2*float64(i) + 1))
+		sum = sum + val
 	}
-	result = 0.5 + (sum/math.Sqrt(2*math.Pi))*math.Exp(-(x*x)/2)
-	return result
+	res = 0.5 + (sum/math.Sqrt(2*math.Pi))*math.Exp(-(a*a)/2)
+	return res
 }
