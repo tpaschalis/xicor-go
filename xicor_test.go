@@ -107,6 +107,11 @@ func TestXi(t *testing.T) {
 	if abs(pval1-wantPval) > 0.01 {
 		t.Errorf("failed float assertion: got:%v, want:%v", pval1, wantPval)
 	}
+
+	// 1000-length array test
+	xi1, pval1, _ = New(xx, yy, WithAsymptoticPvalue()).Pvalue()
+	assertEpsilon(t, xi1, 0.001335001) // R value 0.001335001
+	assertEpsilon(t, pval1, 0.4733904) // R value 0.4733904
 }
 
 func TestXiErrors(t *testing.T) {
